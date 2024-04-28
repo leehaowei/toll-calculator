@@ -16,6 +16,7 @@ func main() {
 		svc CalculatorServicer
 	)
 	svc = NewCalculatorService()
+	svc = NewLogMiddleware(svc)
 	if err != nil {
 		log.Fatal(err)
 	}
