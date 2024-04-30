@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/leehaowei/tolling-micro-service/types"
 )
@@ -25,7 +26,24 @@ func main() {
 func makeHTTPTransport(listenAddr string, svc Aggregator) {
 	fmt.Println("HTTP transport running on port ", listenAddr)
 	http.HandleFunc("/aggregate", handleAggregate(svc))
+	http.HandleFunc("/invoice", handleGetInovice(svc))
 	http.ListenAndServe(listenAddr, nil)
+}
+
+func handleGetInovice(svc Aggregator) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		obuID, err := strconv.Atoi(r.URL.Query().Get("obu"))
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid OBU ID"})
+			return
+		}
+		invoice, err := svc.CalculateInvoice(obuID)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, http.StatusOK, invoice)
+	}
 }
 
 func handleAggregate(svc Aggregator) http.HandlerFunc {
