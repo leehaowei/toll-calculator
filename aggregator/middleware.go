@@ -43,7 +43,7 @@ func (m *LogMiddleware) CalculateInvoice(obuID int) (inv *types.Invoice, err err
 			"took":     time.Since(start),
 			"err":      err,
 			"obuID":    obuID,
-			"amounr":   amount,
+			"amount":   amount,
 			"distance": distance,
 		}).Info("AggregateDistance")
 	}(time.Now())
