@@ -22,3 +22,13 @@ dependenncies
 go get google.golang.org/protobuf
 go get google.golang.org/grpc
 ```
+
+prometheus golang client
+```
+go get github.com/prometheus/client_golang/prometheus
+```
+
+```
+go mod edit -go=1.20
+```
+https://go.dev/dl/

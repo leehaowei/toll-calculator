@@ -29,7 +29,7 @@ func NewInvoiceAggregator(store Storer) Aggregator {
 
 func (i *InvoiceAggregator) AggregateDistance(distance types.Distance) error {
 	logrus.WithFields(logrus.Fields{
-		"obuid":    distance.OBUID,
+		"obuid":    distance.OBUID, 
 		"distance": distance.Value,
 		"unix":     distance.Unix,
 	}).Info("aggregating distance")
