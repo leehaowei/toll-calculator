@@ -33,10 +33,12 @@ services:
       - ./.config:/etc/prometheus
     command: "--config.file=/etc/prometheus/prometheus.yml"
     
-  # grafana:
-  #   image: grafana/grafana
-  #   container_name: grafana
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #   -  GF_SECURITY_ADMIN_PASSWORD=yourpassword  # Change this to your desired password
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true

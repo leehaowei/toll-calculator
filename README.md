@@ -32,3 +32,7 @@ go get github.com/prometheus/client_golang/prometheus
 go mod edit -go=1.20
 ```
 https://go.dev/dl/
+
+
+### grafana
+`http://host.docker.internal:9090`
