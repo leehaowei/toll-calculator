@@ -2,33 +2,35 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 
+	"github.com/joho/godotenv"
 	"github.com/leehaowei/tolling-micro-service/types"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	httpListenAddr := flag.String("httpAddr", ":4000", "the listen addres of the HTTP server")
-	grpcListenAddr := flag.String("grpcAddr", ":3001", "the listen addres of the GRPC server")
-	flag.Parse()
-
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
 	var (
-		store = NewMemoryStore()
-		svc   = NewInvoiceAggregator(store)
+		store          = makeStore()
+		svc            = NewInvoiceAggregator(store)
+		grpcListenAddr = os.Getenv("AGG_GRPC_ENDPOINT")
+		httpListenAddr = os.Getenv("AGG_HTTP_ENDPOINT")
 	)
 	svc = NewMetricsMiddleware(svc)
 	svc = NewLogMiddleware(svc)
 	go func() {
-		log.Fatal(makeGRPCTransport(*grpcListenAddr, svc))
+		log.Fatal(makeGRPCTransport(grpcListenAddr, svc))
 	}()
-	log.Fatal(makeHTTPTransport(*httpListenAddr, svc))
+	log.Fatal(makeHTTPTransport(httpListenAddr, svc))
 }
 
 func makeGRPCTransport(listenAddr string, svc Aggregator) error {
@@ -59,6 +61,10 @@ func makeHTTPTransport(listenAddr string, svc Aggregator) error {
 
 func handleGetInovice(svc Aggregator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "method not supported"})
+			return
+		}
 		obuID, err := strconv.Atoi(r.URL.Query().Get("obu"))
 		if err != nil {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid OBU ID"})
@@ -95,4 +101,15 @@ func writeJSON(w http.ResponseWriter, status int, v any) error {
 	w.WriteHeader(status)
 	w.Header().Add("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(v)
+}
+
+func makeStore() Storer {
+	storeType := os.Getenv("AGG_STORE_TYPE")
+	switch storeType {
+	case "memory":
+		return NewMemoryStore()
+	default:
+		log.Fatalf("invalid store type given %s", storeType)
+		return nil
+	}
 }
