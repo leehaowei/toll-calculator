@@ -1,3 +1,6 @@
 bin
 temp/
 docker-compose-local.yml
+
+# OS
+.DS_Store

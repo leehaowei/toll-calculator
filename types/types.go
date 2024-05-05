@@ -1,5 +1,6 @@
 package types
 
+// types.Invoice is BO and should be independent from transport
 type Invoice struct {
 	OBUID         int     `json:"obuID"`
 	TotalDistance float64 `json:"totalDistance"`
