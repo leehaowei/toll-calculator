@@ -2,6 +2,7 @@ package aggservice
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/leehaowei/tolling-micro-service/types"
 )
@@ -24,6 +25,7 @@ func newBasicService(store Storer) Service {
 }
 
 func (svc *BasicService) Aggregate(_ context.Context, dist types.Distance) error {
+	fmt.Println("this is coming from the internal business logic layer")
 	return svc.store.Insert(dist)
 }
 
@@ -42,7 +44,7 @@ func (svc *BasicService) Calculate(_ context.Context, obuID int) (*types.Invoice
 
 // NewAggregatorService constructs a complete microservice
 // with logging and instrumentation middleware.
-func NewAggregatorService() Service {
+func New() Service {
 	var svc Service
 	{
 		svc = newBasicService(NewMemoryStore())
